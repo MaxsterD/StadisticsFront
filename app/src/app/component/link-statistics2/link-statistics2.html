@@ -1,0 +1,84 @@
+<div class="container">
+
+  <h1>📊 Estadísticas de Enlace</h1>
+
+  <!-- INPUT DEL CÓDIGO -->
+  <div class="card input-card">
+    <label>Código del enlace</label>
+    <input type="text" [(ngModel)]="shortCode" placeholder="Ej: abc123" />
+    <button (click)="searchStatistics()">Buscar estadísticas</button>
+  </div>
+
+  <!-- FILTROS DE FECHAS -->
+  <div class="filters" *ngIf="statistics">
+    <div class="card">
+      <label>Filtrar por una fecha específica</label>
+      <input type="date" [(ngModel)]="selectedDate" (change)="filterByDate()" />
+    </div>
+
+    <div class="card">
+      <label>Rango de fechas</label>
+      <div class="range">
+        <input type="date" [(ngModel)]="dateRange.start" />
+        <input type="date" [(ngModel)]="dateRange.end" />
+      </div>
+      <button (click)="searchByDateRange()">Buscar por rango</button>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading" *ngIf="isLoading">
+    <div class="spinner"></div>
+    Cargando estadísticas...
+  </div>
+
+  <!-- ERROR -->
+  <div class="error" *ngIf="error">{{ error }}</div>
+
+  <!-- RESULTADOS -->
+  <div *ngIf="statistics" class="results">
+
+    <!-- TARJETAS RESUMEN -->
+    <div class="summary">
+      <div class="stat-card">
+        <h3>🔢 Total histórico</h3>
+        <p>{{ statistics.totalVisitsEver }}</p>
+      </div>
+
+      <div class="stat-card">
+        <h3>📅 Resumen</h3>
+        <p>{{ statistics.reportSummary }}</p>
+      </div>
+
+      <div class="stat-card">
+        <h3>👁‍🗨 Visitas del periodo</h3>
+        <p>{{ statistics.visitsInPeriod }}</p>
+      </div>
+    </div>
+
+    <!-- TABLA DE VISITAS -->
+    <div class="card table-card" *ngIf="filteredStats.length > 0">
+      <h2>📆 Visitas por día</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Visitas</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let stat of filteredStats">
+            <td>{{ stat.date }}</td>
+            <td>{{ stat.visits }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- SIN RESULTADOS -->
+    <div class="card no-data" *ngIf="filteredStats.length === 0">
+      <h3>😕 No hay visitas para este período</h3>
+    </div>
+  </div>
+</div>
