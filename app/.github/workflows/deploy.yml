@@ -15,26 +15,30 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v3
         with:
-          node-version: "18"
+          node-version: "20"
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Build Angular
+      - name: Build Angular (production)
         run: npm run build --configuration production
 
+      # -------- AWS CONFIG --------
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          aws-region: us-east-2
 
-      - name: Sync S3
-        run: aws s3 sync dist/tu-proyecto/ s3://CHANGE_ME-mi-frontend-angular --delete
+      # -------- DEPLOY S3 --------
+      - name: Sync S3 Bucket
+        run: |
+          aws s3 sync dist/FrontendParcial_3/browser/ s3://estadisticas-front-end --delete
 
-      - name: Invalidate CloudFront cache
-        run: >
-          aws cloudfront create-invalidation 
-          --distribution-id CHANGE_ME_DISTRIBUTION_ID 
+      # -------- CLOUDFRONT --------
+      - name: Invalidate CloudFront Cache
+        run: |
+          aws cloudfront create-invalidation \
+          --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
           --paths "/*"

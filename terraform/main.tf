@@ -1,11 +1,12 @@
 provider "aws" {
-  region = "us-east-1"
+  region = "us-east-2"
 }
 
-# ---- S3 Bucket (para hosting del frontend Angular) ----
+# ---- S3 Bucket (Frontend Angular) ----
 resource "aws_s3_bucket" "frontend_bucket" {
-  bucket = "CHANGE_ME-mi-frontend-angular"
-}
+  bucket = "estadisticas-front-end"
+  force_destroy = false
+} 
 
 resource "aws_s3_bucket_website_configuration" "frontend_website" {
   bucket = aws_s3_bucket.frontend_bucket.id
@@ -30,15 +31,18 @@ resource "aws_s3_bucket_public_access_block" "frontend_bucket_public_access" {
 
 resource "aws_s3_bucket_policy" "frontend_bucket_policy" {
   bucket = aws_s3_bucket.frontend_bucket.id
+
   policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Sid       = "PublicRead"
-      Effect    = "Allow"
-      Principal = "*"
-      Action    = "s3:GetObject"
-      Resource  = "${aws_s3_bucket.frontend_bucket.arn}/*"
-    }]
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid       = "PublicRead",
+        Effect    = "Allow",
+        Principal = "*",
+        Action    = "s3:GetObject",
+        Resource  = "${aws_s3_bucket.frontend_bucket.arn}/*"
+      }
+    ]
   })
 }
 
@@ -53,7 +57,7 @@ resource "aws_cloudfront_distribution" "cdn" {
   }
 
   default_cache_behavior {
-    target_origin_id = "s3-frontend"
+    target_origin_id       = "s3-frontend"
     viewer_protocol_policy = "redirect-to-https"
 
     allowed_methods = ["GET", "HEAD"]
@@ -64,6 +68,12 @@ resource "aws_cloudfront_distribution" "cdn" {
       cookies {
         forward = "none"
       }
+    }
+  }
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
     }
   }
 
